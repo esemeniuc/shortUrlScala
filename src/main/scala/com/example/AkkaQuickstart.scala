@@ -5,11 +5,12 @@ import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
-
+import com.example.PageContent
 
 import scala.concurrent.Future
+import scala.io.StdIn
 
-object WebServer {
+object AkkaQuickstart {
   def main(args: Array[String]) {
     implicit val system = ActorSystem()
     implicit val materializer = ActorMaterializer()
@@ -20,22 +21,17 @@ object WebServer {
     val requestHandler = (req: HttpRequest) => {
       println(s"req : $req")
       req match {
-        case HttpRequest(GET, Uri.Path("/"), headers, _, _) =>
-          println(s"header: $headers")
+        case HttpRequest(GET, Uri.Path("/"), _, _, _) =>
           HttpResponse(entity = HttpEntity(
             ContentTypes.`text/html(UTF-8)`,
-            "<html><body>Hello world!</body></html>"))
+            PageContent.pageHeader() + PageContent.homepageContent() + PageContent.pageFooter()))
 
-        case HttpRequest(GET, Uri.Path("/ping"), _, _, _) =>
+        case HttpRequest(POST, Uri.Path("/submit"), _, entity, _) =>
+          println(s"ent: $entity")
           HttpResponse(entity = "PONG!")
 
-
         case default =>
-          println(s"header: ${default.headers}")
-          println(s"uri ${default.uri}")
           println(s"uri ${default.getUri()}")
-          println(s"uri ${default.effectiveUri(securedConnection = false)}")
-
           default.discardEntityBytes() // important to drain incoming HTTP Entity stream
           HttpResponse(404, entity = "Unknown resource!")
       }
@@ -48,5 +44,10 @@ object WebServer {
         // this is equivalent to
         // connection handleWith { Flow[HttpRequest] map requestHandler }
       }).run()
+
+    println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
+    StdIn.readLine() // let it run until user presses return
+    bindingFuture.flatMap(_.unbind()) // trigger unbinding from the port
+      .onComplete(_ => system.terminate()) // and shutdown when done
   }
 }
