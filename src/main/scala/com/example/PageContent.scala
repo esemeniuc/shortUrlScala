@@ -2,7 +2,7 @@ package com.example
 
 
 object PageContent {
-  def pageHeader(): String = {
+  def header(): String = {
     """<!doctype html>
 <html lang="en">
 <head>
@@ -18,7 +18,7 @@ object PageContent {
 <main role="main" class="container">"""
   }
 
-  def pageFooter(): String = {
+  def footer(): String = {
     """</main><!-- /.container -->
 
 <!-- Bootstrap core JavaScript
