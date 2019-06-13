@@ -31,7 +31,7 @@ object AkkaQuickstart {
           PageContent.header() + PageContent.homepageContent() + PageContent.footer()))
 
       case HttpRequest(POST, Uri.Path("/submit"), _, entity, _) =>
-        val url = Await.result(Unmarshal(req).to[String], 1.second)
+        val url = Await.result(Unmarshal(req).to[String], 2.second)
         val (decodedUrl, ok) = DecodeURL(url)
         println(s"user submitted: $decodedUrl")
         if (ok) {
@@ -50,7 +50,7 @@ object AkkaQuickstart {
           return HttpResponse(entity = "Error in shortcode!")
         }
         val shortcode = shortcodeParts(1)
-        println(s"shortcode: $shortcode")
+        println(s"requested shortcode: $shortcode")
         if (!urlMap.contains(shortcode)) {
           val shortenedUrl = s"$rootUrl/$shortcode"
           return HttpResponse(404, entity = HttpEntity(ContentTypes.`text/html(UTF-8)`,
@@ -60,15 +60,12 @@ object AkkaQuickstart {
         HttpResponse(
           status = StatusCodes.TemporaryRedirect,
           headers = List(headers.Location(urlMap(shortcode))),
-          entity = ""
         )
     }
   }
 
   def main(args: Array[String]) {
-
     val serverSource = Http().bind(interface = "localhost", port = 8080)
-
     val bindingFuture: Future[Http.ServerBinding] =
       serverSource.to(Sink.foreach {
         connection =>
@@ -78,10 +75,9 @@ object AkkaQuickstart {
         // connection handleWith { Flow[HttpRequest] map requestHandler }
       }).run()
 
-    println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
+    println(s"Server online at $rootUrl\nPress RETURN to stop...")
     StdIn.readLine() // let it run until user presses return
     bindingFuture.flatMap(_.unbind()) // trigger unbinding from the port
       .onComplete(_ => system.terminate()) // and shutdown when done
   }
-
 }
