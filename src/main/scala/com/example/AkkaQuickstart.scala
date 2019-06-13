@@ -6,6 +6,8 @@ import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Sink
 import com.example.PageContent
+import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.unmarshalling.Unmarshal
 
 import scala.concurrent.Future
 import scala.io.StdIn
@@ -27,7 +29,7 @@ object AkkaQuickstart {
             PageContent.pageHeader() + PageContent.homepageContent() + PageContent.pageFooter()))
 
         case HttpRequest(POST, Uri.Path("/submit"), _, entity, _) =>
-          println(s"ent: $entity")
+          println(s"entdata: ${req.entity.dataBytes}")
           HttpResponse(entity = "PONG!")
 
         case default =>
