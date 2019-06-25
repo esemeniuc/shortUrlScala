@@ -64,7 +64,7 @@ object AkkaQuickstart {
   }
 
   def main(args: Array[String]) {
-    val serverSource = Http().bind(interface = "localhost", port = 8080)
+    val serverSource = Http().bind(interface = "0.0.0.0", port = 8080)
     val bindingFuture: Future[Http.ServerBinding] =
       serverSource.to(Sink.foreach {
         connection =>
